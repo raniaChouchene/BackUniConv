@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "lib": ["es6"],
+    "allowJs": true,
+    "typeRoots": ["./app/src/types"],
+    "types": ["express"],
+    "removeComments": true,
+    "strict": false,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./app/src/*"]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["app/src/**/*"],
+  "exclude": ["./app/tests/", "./node_modules/", "./dist/"]
+}
