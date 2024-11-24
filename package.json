@@ -21,6 +21,7 @@
     "joi": "^17.4.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.12.14",
+    "nodemailer": "^6.9.16",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0"
   },
