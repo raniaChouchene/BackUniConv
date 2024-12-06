@@ -53,7 +53,37 @@ class UserController {
 
     return res.send(`Welcome ${user.name}`);
   }
+  resetPassword = async (req: Request, res: Response): Promise<Response> => {
+    const { username, password, validePassword } = req.body;
+
+    // Step 1: Validate input
+    if (!username || !password || !validePassword) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Step 2: Check if passwords match
+    if (password !== validePassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
+
+    // Step 3: Find the user by username
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Step 4: Hash the new password
+    const hashedPassword = await bcrypt.hash(password, 8);
+
+    // Step 5: Update the password in the database
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successfully" });
+  };
 }
+
 async function sendVerificationEmail(recipientEmail: string): Promise<void> {
   const emailRegex = /\S+@\S+\.\S+/;
   if (!emailRegex.test(recipientEmail)) {
@@ -109,5 +139,48 @@ async function sendVerificationEmail(recipientEmail: string): Promise<void> {
     throw new Error("Failed to send the verification email.");
   }
 }
+async function sendForgotPasswordEmail(recipientEmail: string): Promise<void> {
+  const emailRegex = /\S+@\S+\.\S+/;
+  if (!emailRegex.test(recipientEmail)) {
+    throw new Error("Invalid recipient email format.");
+  }
 
-export { UserController, sendVerificationEmail };
+  const senderEmail = "rania.chouchene.2019@gmail.com";
+
+  const resetToken = jwt.sign(
+    { email: recipientEmail },
+    process.env.SECRET_KEY || "default_secret",
+    { expiresIn: "1h" }
+  );
+
+  const resetUrl = `${"http://localhost:4200/reset-password?token="}${resetToken}`;
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "rania.chouchene.2019@gmail.com",
+      pass: "qdta cqdq jtpv locs", // Consider using environment variables for security
+    },
+  });
+
+  try {
+    await transporter.sendMail({
+      from: senderEmail,
+      to: recipientEmail,
+      subject: "Update Your Account",
+      html: `
+        <p>Bienvenue sur l'application de Conversion d'Unités, Uniticonve !</p>
+        <p>Vous avez oublié votre mot de passe ? Pas de problème, cliquez sur ce lien pour le réinitialiser :</p>
+        <h3><a href="http://localhost:4200/ResetPassWord">http://localhost:4200/ResetPassWord</a></h3>
+        <p>Ce lien expirera dans une heure.</p>
+      `,
+    });
+
+    console.log(`Password reset email sent to ${recipientEmail}`);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send the reset password email.");
+  }
+}
+
+export { UserController, sendVerificationEmail, sendForgotPasswordEmail };

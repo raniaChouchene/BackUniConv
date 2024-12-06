@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import passport from "passport";
 import {
+  sendForgotPasswordEmail,
   sendVerificationEmail,
   UserController,
 } from "~/application/controllers/UserController";
@@ -41,6 +42,27 @@ router.post("/login", generateJWT, async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ error: "Failed to send verification email." });
+  }
+});
+router.post("/resetPassword", userController.resetPassword);
+router.post("/forgettenPassWord", async (req: Request, res: Response) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: "Email is required." });
+  }
+
+  try {
+    await sendForgotPasswordEmail(username);
+
+    return res.status(200).json({
+      message: "Password reset email sent successfully.",
+    });
+  } catch (error) {
+    console.error("Error sending reset password email:", error);
+    return res
+      .status(500)
+      .json({ error: "Failed to send reset password email." });
   }
 });
 
