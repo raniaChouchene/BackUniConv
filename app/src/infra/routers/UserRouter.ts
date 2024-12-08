@@ -45,6 +45,7 @@ router.post("/login", generateJWT, async (req: Request, res: Response) => {
   }
 });
 router.post("/resetPassword", userController.resetPassword);
+router.post("/verify", userController.verifyUser);
 router.post("/forgettenPassWord", async (req: Request, res: Response) => {
   const { username } = req.body;
 

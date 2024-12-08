@@ -76,11 +76,24 @@ class UserController {
     // Step 4: Hash the new password
     const hashedPassword = await bcrypt.hash(password, 8);
 
-    // Step 5: Update the password in the database
     user.password = hashedPassword;
     await user.save();
 
     return res.status(200).json({ message: "Password reset successfully" });
+  };
+
+  verifyUser = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const decoded = jwt.verify(
+        req.body.token,
+        process.env.SECRET_KEY || "default_secret"
+      );
+      console.log("Token decoded:", decoded);
+      return res.status(200).json({ message: "User verified successfully" });
+    } catch (error) {
+      console.error("Error verifying user:", error);
+      return res.status(400).json({ error: "User verification failed" });
+    }
   };
 }
 
